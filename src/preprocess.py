@@ -15,7 +15,6 @@ def clean_text(text):
     return text.strip()
 
 # Main
-
 nltk.download("brown")
 
 # Storing the entire brown corpus as a single string
