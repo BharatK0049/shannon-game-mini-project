@@ -49,3 +49,32 @@ class ShannonGame:
             if total > 0 else 0
         )
         print(f"\nFirst-guess accuracy: {first_guess_accuracy:.2f}%")
+
+
+    def demo(self, text: str, start_index: int, num_steps: int = 10):
+        """
+        Demonstrate live Shannon game predictions step-by-step.
+        """
+        print("\n--- SHANNON GAME DEMO ---\n")
+
+        for i in range(start_index, start_index + num_steps):
+            context = text[i:i+2]
+            true_char = text[i+2]
+
+            ranked = self.model.get_ranked_predictions(context)
+
+            print(f"Context: '{context}'")
+            print(f"Actual next character: '{true_char}'")
+
+            if not ranked:
+                print("No data for this context.\n")
+                continue
+
+            for idx, guess in enumerate(ranked[:5], start=1):
+                mark = "✅" if guess == true_char else "❌"
+                print(f"Guess {idx}: '{guess}' {mark}")
+
+                if guess == true_char:
+                    break
+
+            print("-" * 30)

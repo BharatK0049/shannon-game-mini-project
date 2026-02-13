@@ -18,6 +18,9 @@ def main():
     # Play Shannon game
     game = ShannonGame(model)
     game.play(test_text)
+    print("\nShowing live prediction demo:\n")
+    game.demo(test_text, start_index=1000, num_steps=5)
+
     game.report()
 
 
