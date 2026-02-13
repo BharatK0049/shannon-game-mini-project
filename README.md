@@ -124,7 +124,7 @@ shannon_game/
 │   └── main.py              # Runs the full experiment
 ├── requirements.txt
 └── README.md
-
+```
 
 ## Module Descriptions
 
