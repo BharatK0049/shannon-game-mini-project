@@ -30,5 +30,8 @@ def main():
     redundancy = game.estimate_redundancy(entropy)
     print(f"Estimated redundancy: {redundancy * 100:.2f}%")
 
+    perplexity = 2 ** (entropy)
+    print(f"Estimated perplexity: {perplexity:.2f}")
+
 if __name__ == "__main__":
     main()
