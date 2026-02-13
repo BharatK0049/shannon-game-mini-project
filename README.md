@@ -78,19 +78,16 @@ Entropy and redundancy are computed **after the Shannon game**, using the distri
 
 If the correct character is found at rank \( r \), it contributes approximately:
 
-\[
-\log_2(r) \text{ bits of information}
-\]
+
+log_2(r) {bits of information}
 
 Entropy is estimated as the **average** of this quantity over all predictions in the test corpus.
 
 Redundancy is then computed relative to the maximum possible entropy:
 
-\[
-\text{Redundancy} = 1 - \frac{H}{H_{\max}}
-\]
+Redundancy = 1 - (H / H_max)
 
-where \( H_{\max} = \log_2(27) \) for the 26 letters plus space.
+where  H_max = log_2(27) for the 26 letters plus space.
 
 ---
 
@@ -98,9 +95,7 @@ where \( H_{\max} = \log_2(27) \) for the 26 letters plus space.
 
 Perplexity is derived directly from entropy:
 
-\[
-\text{Perplexity} = 2^H
-\]
+Perplexity = 2^H
 
 Perplexity represents the **effective number of plausible next characters** after accounting for context.
 
