@@ -9,20 +9,19 @@ The goal is to demonstrate the core idea computationally:
 
 ## Project Structure
 
+```text
 shannon_game/
-│
 ├── data/
 │   ├── brown_train.txt      # Training corpus
 │   └── brown_test.txt       # Test corpus (unseen during training)
-│
 ├── src/
 │   ├── preprocess.py        # Loads and cleans the Brown corpus
 │   ├── ngram_model.py       # Trigram language model
 │   ├── shannon_game.py      # Shannon prediction game logic
 │   └── main.py              # Runs the full experiment
-│
 ├── requirements.txt
 └── README.md
+```
 
 ## Module Descriptions
 
