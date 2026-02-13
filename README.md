@@ -68,14 +68,17 @@ This simulates Shannon’s original prediction experiments programmatically.
 
 ## How to Run
 
+### Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
+### Preprocess the corpus
 ```
 python src/preprocess.py
 ```
 
+### Run the Shannon game
 ```
 python src/preprocess.py
 ```
