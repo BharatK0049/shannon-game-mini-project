@@ -32,6 +32,9 @@ The model then ranks possible next characters using only statistics learned from
 - A low guess rank (e.g., Guess 1 or Guess 2) means the next character was highly predictable
 - A high guess rank means the context allowed many plausible continuations
 
+
+**Entropy and redundancy are estimated from the Shannon game by converting guess-rank frequencies into an average information measure. If the correct character is found at rank 𝑟, it contributes approximately log⁡2(𝑟) bits of information. Averaging this quantity over the test corpus yields an empirical estimate of entropy, from which redundancy is computed relative to the maximum possible entropy.**
+
 ## Project Structure
 
 ```text
