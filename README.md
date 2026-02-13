@@ -1,39 +1,114 @@
 # Shannon Game
 
 ## Overview
-This project implements a Shannon game for English text using a character-level trigram (3-gram) model, inspired by Claude Shannon’s paper Prediction and Entropy of Printed English (1951).
 
-The goal is to demonstrate the core idea computationally:
+This project implements a **Shannon game** for English text using a **character-level trigram (3-gram) model**, inspired by Claude Shannon’s paper *Prediction and Entropy of Printed English (1951)*.
 
+The goal is to demonstrate Shannon’s core idea computationally:
 
-*The predictability of language can be measured by how difficult it is to guess the next symbol given prior context.*
+> *The predictability of language can be measured by how difficult it is to guess the next symbol given prior context.*
+
+Rather than reproducing Shannon’s mathematical proofs, this project focuses on **empirically measuring predictability** using statistical language models.
+
+---
 
 ## How Prediction Works
 
-This project splits the brown corpus into training and a testing/evaluation, where 80% of the Brown corpus is used only to learn statistics of English, and the remaining 20% (the testing), is used to play the Shannon game.
+The Brown corpus is split into a **training set** and a **testing (evaluation) set**.
+
+- The **training set** is used only to learn statistical patterns of English.
+- The **testing set** is used to play the Shannon game and evaluate predictability.
+
+This separation ensures the experiment measures **generalization**, not memorization.
+
+---
 
 ### Training Set
-Using the training set `brown_train.txt`, the trigram model records:
-- How frequently each character follows a given two-character context
 
-- For example:
+Using the training set (`brown_train.txt`), the trigram model records:
+
+- How frequently each character follows a given **two-character context**
+
+For example, from the training data:
+
 `"th" → 'e' occurs most often, followed by 'a', 'i', etc.`
 
-No prediction or guessing is performed on the training data.
+
+No prediction or guessing is performed on the training data.  
+It is used **only** to learn frequency statistics.
+
+---
 
 ### Testing Set
-Using the testing set `brown_test.txt`, 
-- The two character context is taken from the testing set itself,
-- and the third character as well is taken from the testing set
 
-The model then ranks possible next characters using only statistics learned from the training corpus
+Using the testing set (`brown_test.txt`):
 
-### What the Number of Guesses Mean?
-- A low guess rank (e.g., Guess 1 or Guess 2) means the next character was highly predictable
-- A high guess rank means the context allowed many plausible continuations
+- The **two-character context** is taken from the test text itself
+- The **actual next character** is also taken from the test text
 
+The model then ranks possible next characters **using only statistics learned from the training corpus**.
 
-**Entropy and redundancy are estimated from the Shannon game by converting guess-rank frequencies into an average information measure. If the correct character is found at rank 𝑟, it contributes approximately log⁡2(𝑟) bits of information. Averaging this quantity over the test corpus yields an empirical estimate of entropy, from which redundancy is computed relative to the maximum possible entropy.**
+In effect, the model is asked:
+
+> *“Given this unseen context, how difficult is it to predict what actually comes next?”*
+
+---
+
+### What Do the Number of Guesses Mean?
+
+For each character in the test text, the model:
+
+1. Ranks possible next characters by frequency
+2. Treats the most frequent character as the **first guess**
+3. If incorrect, checks the second most frequent, then the third, and so on
+4. Records the **rank at which the correct character appears**
+
+Interpretation:
+
+- **Low guess rank (e.g., Guess 1 or Guess 2):** highly predictable
+- **High guess rank:** many plausible continuations
+
+These guess ranks quantify **prediction difficulty**.
+
+---
+
+## Estimating Entropy and Redundancy
+
+Entropy and redundancy are computed **after the Shannon game**, using the distribution of guess ranks.
+
+If the correct character is found at rank \( r \), it contributes approximately:
+
+\[
+\log_2(r) \text{ bits of information}
+\]
+
+Entropy is estimated as the **average** of this quantity over all predictions in the test corpus.
+
+Redundancy is then computed relative to the maximum possible entropy:
+
+\[
+\text{Redundancy} = 1 - \frac{H}{H_{\max}}
+\]
+
+where \( H_{\max} = \log_2(27) \) for the 26 letters plus space.
+
+---
+
+## Perplexity
+
+Perplexity is derived directly from entropy:
+
+\[
+\text{Perplexity} = 2^H
+\]
+
+Perplexity represents the **effective number of plausible next characters** after accounting for context.
+
+For example:
+- \( H = 1.35 \) bits → perplexity ≈ **2.5**
+- This means the model behaves as if it is choosing among **2–3 plausible characters on average**
+
+---
 
 ## Project Structure
 
@@ -49,7 +124,7 @@ shannon_game/
 │   └── main.py              # Runs the full experiment
 ├── requirements.txt
 └── README.md
-```
+
 
 ## Module Descriptions
 
@@ -83,6 +158,7 @@ This models the statistical structure of English at the character level.
     - Guesses the next character in order of likelihood
     - Records the number of guesses required
 - Aggregates guess-rank statistics
+- Estimates entropy and redundancy
 
 This simulates Shannon’s original prediction experiments programmatically.
 
@@ -91,7 +167,7 @@ This simulates Shannon’s original prediction experiments programmatically.
 - Loads training and test text
 - Trains the trigram model
 - Runs the Shannon game
-- Prints a summary of prediction results
+- Prints prediction statistics, entropy, redundancy, and perplexity
 
 ## How to Run
 
