@@ -18,11 +18,17 @@ def main():
     # Play Shannon game
     game = ShannonGame(model)
     game.play(test_text)
+
     print("\nShowing live prediction demo:\n")
     game.demo(test_text, start_index=1000, num_steps=5)
 
     game.report()
+    
+    entropy = game.estimate_entropy()
+    print(f"\nEstimated entropy: {entropy:.3f} bits per character")
 
+    redundancy = game.estimate_redundancy(entropy)
+    print(f"Estimated redundancy: {redundancy * 100:.2f}%")
 
 if __name__ == "__main__":
     main()

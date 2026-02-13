@@ -1,7 +1,7 @@
 from collections import Counter
 from typing import List
 from ngram_model import TrigramModel
-
+import math
 
 class ShannonGame:
     def __init__(self, model: TrigramModel):
@@ -78,3 +78,28 @@ class ShannonGame:
                     break
 
             print("-" * 30)
+
+    def estimate_entropy(self):
+        """
+        Estimate entropy (bits per character) from guess-rank distribution.
+        """
+        total = sum(self.guess_counts.values())
+        if total == 0:
+            return 0.0
+
+        entropy = 0.0
+        for rank, count in self.guess_counts.items():
+            probability = count / total
+            entropy += probability * math.log2(rank)
+
+        return entropy
+
+    def estimate_redundancy(self, entropy):
+        """
+        Calculating redundancy based on entropy
+        param: entropy
+        """
+        max_entropy = math.log2(27) # 26 letters + whitespace
+        redundancy = 1 - (entropy / max_entropy)
+
+        return redundancy
