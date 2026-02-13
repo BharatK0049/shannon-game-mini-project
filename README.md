@@ -4,8 +4,9 @@
 This project implements a Shannon game for English text using a character-level trigram (3-gram) model, inspired by Claude Shannon’s paper Prediction and Entropy of Printed English (1951).
 
 The goal is to demonstrate the core idea computationally:
+```
 *The predictability of language can be measured by how difficult it is to guess the next symbol given prior context.*
-
+```
 
 ## Project Structure
 
