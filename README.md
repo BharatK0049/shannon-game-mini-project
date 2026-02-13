@@ -8,6 +8,30 @@ The goal is to demonstrate the core idea computationally:
 
 *The predictability of language can be measured by how difficult it is to guess the next symbol given prior context.*
 
+## How Prediction Works
+
+This project splits the brown corpus into training and a testing/evaluation, where 80% of the Brown corpus is used only to learn statistics of English, and the remaining 20% (the testing), is used to play the Shannon game.
+
+### Training Set
+Using the training set `brown_train.txt`, the trigram model records:
+- How frequently each character follows a given two-character context
+
+- For example:
+`"th" → 'e' occurs most often, followed by 'a', 'i', etc.`
+
+No prediction or guessing is performed on the training data.
+
+### Testing Set
+Using the testing set `brown_test.txt`, 
+- The two character context is taken from the testing set itself,
+- and the third character as well is taken from the testing set
+
+The model then ranks possible next characters using only statistics learned from the training corpus
+
+### What the Number of Guesses Mean?
+- A low guess rank (e.g., Guess 1 or Guess 2) means the next character was highly predictable
+- A high guess rank means the context allowed many plausible continuations
+
 ## Project Structure
 
 ```text
