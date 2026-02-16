@@ -1,168 +1,90 @@
-# Shannon Game
+# Multi-Purpose NLP Suite: Shannon Game & Noisy Channel Spell Checker
 
 ## Overview
+This project implements a flexible **Word-Level N-Gram Model** designed to explore the predictability of the English language. Inspired by Claude Shannon’s 1951 paper *Prediction and Entropy of Printed English*, it empirically measures language entropy and provides practical applications for sequence prediction and error correction.
 
-This project implements a **Shannon game** for English text using a **character-level trigram (3-gram) model**, inspired by Claude Shannon’s paper *Prediction and Entropy of Printed English (1951)*.
-
-The goal is to demonstrate Shannon’s core idea computationally:
-
-> *The predictability of language can be measured by how difficult it is to guess the next symbol given prior context.*
-
-Rather than reproducing Shannon’s mathematical proofs, this project focuses on **empirically measuring predictability** using statistical language models.
+Key features include:
+* **Dynamic N-Gram Engine:** Supports context lengths from Bigrams up to a user-defined cap (default $N=5$).
+* **Shannon Game Implementation:** Empirically calculates Entropy and Perplexity based on word-prediction difficulty.
+* **Noisy Channel Spell Checker:** Uses the Bayesian argmax $P(w|c)P(c)$ to correct spelling errors using context-aware probabilities.
 
 ---
 
-## How Prediction Works
+## Core Applications
 
-The Brown corpus is split into a **training set** and a **testing (evaluation) set**.
+### 1. The Shannon Game (Predictive Modeling)
+The model predicts the most likely next word given a specific context.
+* **Task:** Focuses on predicting the word that is not there in the sentence.
+* **Metric:** Uses **Perplexity** to quantify model uncertainty. A lower perplexity indicates the model has narrowed down the possibilities to a smaller "effective" vocabulary.
 
-- The **training set** is used only to learn statistical patterns of English.
-- The **testing set** is used to play the Shannon game and evaluate predictability.
-
-This separation ensures the experiment measures **generalization**, not memorization.
-
----
-
-### Training Set
-
-Using the training set (`brown_train.txt`), the trigram model records:
-
-- How frequently each character follows a given **two-character context**
-
-For example, from the training data:
-
-`"th" → 'e' occurs most often, followed by 'a', 'i', etc.`
-
-
-No prediction or guessing is performed on the training data.  
-It is used **only** to learn frequency statistics.
+### 2. Noisy Channel Spell Checker
+Corrects misspelled words by balancing the likelihood of the error against the probability of the word occurring in a specific context.
+* **Formula:** $\hat{c} = \text{argmax}_{c \in \text{candidates}} P(w|c)P(c)$.
+* **Logic:** Generates candidates using edit distance (deletions, transposes, replaces, inserts) and ranks them using the N-Gram Language Model.
 
 ---
 
-### Testing Set
+## Technical Details
 
-Using the testing set (`brown_test.txt`):
+### Word-Level Prediction Logic
+Unlike character-level models, this implementation processes the **Brown Corpus** as a sequence of word tokens.
+* **Context:** A tuple of $n-1$ preceding words.
+* **Dynamic Sizing:** The system adapts to different input lengths by utilizing the available context from the user's input up to the defined model cap.
 
-- The **two-character context** is taken from the test text itself
-- The **actual next character** is also taken from the test text
-
-The model then ranks possible next characters **using only statistics learned from the training corpus**.
-
-In effect, the model is asked:
-
-> *“Given this unseen context, how difficult is it to predict what actually comes next?”*
-
----
-
-### What Do the Number of Guesses Mean?
-
-For each character in the test text, the model:
-
-1. Ranks possible next characters by frequency
-2. Treats the most frequent character as the **first guess**
-3. If incorrect, checks the second most frequent, then the third, and so on
-4. Records the **rank at which the correct character appears**
-
-Interpretation:
-
-- **Low guess rank (e.g., Guess 1 or Guess 2):** highly predictable
-- **High guess rank:** many plausible continuations
-
-These guess ranks quantify **prediction difficulty**.
-
----
-
-## Estimating Entropy and Redundancy
-
-Entropy and redundancy are computed **after the Shannon game**, using the distribution of guess ranks.
-
-If the correct character is found at rank \( r \), it contributes approximately:
-
-
-log_2(r) {bits of information}
-
-Entropy is estimated as the **average** of this quantity over all predictions in the test corpus.
-
-Redundancy is then computed relative to the maximum possible entropy:
-
-Redundancy = 1 - (H / H_max)
-
-where  H_max = log_2(27) for the 26 letters plus space.
-
----
-
-## Perplexity
-
-Perplexity is derived directly from entropy:
-
-Perplexity = 2^H
-
-Perplexity represents the **effective number of plausible next characters** after accounting for context.
-
-For example:
-- \( H = 1.35 \) bits → perplexity ≈ **2.5**
-- This means the model behaves as if it is choosing among **2–3 plausible characters on average**
+### Estimating Entropy and Perplexity
+After "playing" the game on the test set (`brown_test.txt`), entropy is estimated using the rank $r$ of the correct word:
+$$H = \sum P(r) \log_2(r)$$
+Perplexity is then derived as $PP = 2^H$.
 
 ---
 
 ## Project Structure
-
 ```text
 shannon_game/
 ├── data/
-│   ├── brown_train.txt      # Training corpus
-│   └── brown_test.txt       # Test corpus (unseen during training)
+│   ├── brown_train.txt      # 80% Training corpus (Word tokens)
+│   └── brown_test.txt       # 20% Test corpus (Unseen)
 ├── src/
-│   ├── preprocess.py        # Loads and cleans the Brown corpus
-│   ├── ngram_model.py       # Trigram language model
-│   ├── shannon_game.py      # Shannon prediction game logic
-│   └── main.py              # Runs the full experiment
+│   ├── preprocess.py        # Tokenization and cleaning
+│   ├── ngram_model.py       # Dynamic N-Gram frequency engine
+│   ├── shannon_game.py      # Entropy and Perplexity calculation logic
+│   ├── spell_checker.py     # Noisy Channel Model implementation
+│   └── main.py              # Interactive CLI with automated evaluation
 ├── requirements.txt
 └── README.md
 ```
 
 ## Module Descriptions
 
-`preprocess.py`
+### `preprocess.py`
+* **Purpose**: Handles data acquisition and cleaning.
+* **Logic**: Downloads the Brown corpus via NLTK, converts text to lowercase, and removes all non-alphabetic characters.
+* **Output**: Tokenizes the text into a clean list of words and saves them into an 80/20 train-test split for experimentation.
 
-- Downloads the Brown corpus using NLTK
-- Converts text to lowercase
-- Removes punctuation and non-alphabetic characters
-- Treats space as a valid character
-- Splits the corpus into:
-- 80% training data
-- 20% test data
+### `ngram_model.py`
+* **Purpose**: Implements the core Language Model (LM).
+* **Logic**: A flexible $N$-Gram implementation that stores frequency counts for word sequences. It maps a context (a tuple of $n-1$ words) to a counter of possible succeeding words.
+* **Capability**: Supports dynamic context lengths, allowing the model to provide predictions based on the best available match in the training data.
 
-Saves cleaned text as .txt files for transparency
+### `shannon_game.py`
+* **Purpose**: Quantifies language predictability.
+* **Logic**: Iterates through the test set and calculates the "rank" of the correct word in the model's predictions.
+* **Metrics**: Calculates global first-guess accuracy, entropy (average bits of information per word), and perplexity.
 
-`ngram_model.py`
+### `spell_checker.py`
+* **Purpose**: Implements the Noisy Channel Model for error correction.
+* **Logic**: Uses a two-step process to correct misspelled words:
+    1. **Candidate Generation**: Generates potential correct words using a Damerau-Levenshtein distance of 1 or 2.
+    2. **Bayesian Ranking**: Calculates $P(w|c)P(c)$, where $P(c)$ is derived from the N-Gram context provided by `ngram_model.py`.
+* **Edit Distance Logic**: The model considers four types of single-character edits:
+    * **Deletions**: Removing a character (e.g., "stats" → "stats").
+    * **Insertions**: Adding a character (e.g., "stts" → "stats").
+    * **Substitutions**: Swapping one character for another (e.g., "stets" → "stats").
+    * **Transpositions**: Swapping two adjacent characters (e.g., "stats" → "stats").
 
-- Implements a trigram (N = 3) character model
-- Uses:
-    - 2-character context → next character prediction
-- Stores frequency counts of next characters for each context
-- Provides ranked predictions based on frequency
-
-This models the statistical structure of English at the character level.
-
-`shannon_game.py`
-
-- Implements the Shannon game
-- For each character in the test text:
-    - Uses the previous two characters as context
-    - Guesses the next character in order of likelihood
-    - Records the number of guesses required
-- Aggregates guess-rank statistics
-- Estimates entropy and redundancy
-
-This simulates Shannon’s original prediction experiments programmatically.
-
-`main.py`
-
-- Loads training and test text
-- Trains the trigram model
-- Runs the Shannon game
-- Prints prediction statistics, entropy, redundancy, and perplexity
+### `main.py`
+* **Purpose**: Orchestrates the entire pipeline and provides a user interface.
+* **Logic**: Loads tokens, trains the $N$-Gram model, runs the automated evaluation to report perplexity, and enters an interactive loop for real-time word prediction and spell checking.
 
 ## How to Run
 
