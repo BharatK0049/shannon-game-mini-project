@@ -1,32 +1,37 @@
 from collections import defaultdict, Counter
-from typing import Dict
-
+from typing import Dict, List, Tuple
 
 class TrigramModel:
     def __init__(self):
         """
-        Maps a 2-character context to a Counter of next-character frequencies.
+        Maps a 2-word context to a Counter of next-word frequencies.
         Example:
-            self.model["qu"] = Counter({"e": 1200, "i": 3})
+            self.model[("the", "quick")] = Counter({"brown": 10, "red": 2})
         """
-        self.model: Dict[str, Counter] = defaultdict(Counter)
+        # Context is now a tuple of words, not a string
+        self.model: Dict[Tuple[str, str], Counter] = defaultdict(Counter)
 
-    def train(self, text: str):
+    def train(self, tokens: List[str]):
         """
-        Build trigram counts from training text.
+        Build trigram counts from a list of words (tokens).
         """
-        for i in range(len(text) - 2):
-            context = text[i:i+2]
-            next_char = text[i+2]
-            self.model[context][next_char] += 1
+        # Iterate through the list of words
+        for i in range(len(tokens) - 2):
+            w1 = tokens[i]
+            w2 = tokens[i+1]
+            next_word = tokens[i+2]
+            
+            context = (w1, w2)
+            self.model[context][next_word] += 1
 
-    def get_ranked_predictions(self, context: str):
+    def get_ranked_predictions(self, context: Tuple[str, str]) -> List[str]:
         """
-        Given a 2-character context, return characters ranked
+        Given a 2-word context, return words ranked
         from most likely to least likely.
         """
         if context not in self.model:
             return []
 
         counter = self.model[context]
-        return [char for char, _ in counter.most_common()]
+        # Return just the words, sorted by frequency
+        return [word for word, _ in counter.most_common()]
