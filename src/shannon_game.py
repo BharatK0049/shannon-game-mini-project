@@ -1,35 +1,28 @@
 from collections import Counter
 from typing import List
-from ngram_model import TrigramModel
+from ngram_model import NGramModel
 import math
 
 class ShannonGame:
-    def __init__(self, model: TrigramModel):
+    def __init__(self, model: NGramModel):
         self.model = model
         self.guess_counts = Counter()
 
     def play(self, tokens: List[str]):
-            """
-            Play the Shannon game on a list of words (test data).
-            """
-            # Iterate through the words
-            for i in range(len(tokens) - 2):
-                # Context is a tuple of the previous two words
-                context = (tokens[i], tokens[i+1])
-                true_word = tokens[i+2]
+            n = self.model.n
+            # Slide through tokens based on N
+            for i in range(len(tokens) - (n - 1)):
+                context = tuple(tokens[i : i + n - 1])
+                true_word = tokens[i + n - 1]
 
                 ranked_guesses = self.model.get_ranked_predictions(context)
 
-                # If we have never seen this context, we can't predict efficiently
-                # (In a real scenario, you might backoff to a bigram model here)
                 if not ranked_guesses:
                     continue
 
-                # Find the rank of the correct word
                 try:
                     guess_rank = ranked_guesses.index(true_word) + 1
                 except ValueError:
-                    # The word never appeared after this context in training
                     guess_rank = len(ranked_guesses) + 1
 
                 self.guess_counts[guess_rank] += 1

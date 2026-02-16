@@ -1,37 +1,33 @@
 from collections import defaultdict, Counter
 from typing import Dict, List, Tuple
 
-class TrigramModel:
-    def __init__(self):
+class NGramModel:
+    def __init__(self, n: int = 5):
         """
-        Maps a 2-word context to a Counter of next-word frequencies.
-        Example:
-            self.model[("the", "quick")] = Counter({"brown": 10, "red": 2})
+        :param n: The maximum context depth (the cap).
         """
-        # Context is now a tuple of words, not a string
-        self.model: Dict[Tuple[str, str], Counter] = defaultdict(Counter)
+        self.n = n
+        # A single dictionary can store tuples of varying lengths as keys
+        self.model: Dict[Tuple[str, ...], Counter] = defaultdict(Counter)
 
     def train(self, tokens: List[str]):
         """
-        Build trigram counts from a list of words (tokens).
+        Trains the model for all levels from 2-gram up to n-gram.
         """
-        # Iterate through the list of words
-        for i in range(len(tokens) - 2):
-            w1 = tokens[i]
-            w2 = tokens[i+1]
-            next_word = tokens[i+2]
-            
-            context = (w1, w2)
-            self.model[context][next_word] += 1
+        # Train every level from 2 up to the cap
+        for level in range(2, self.n + 1):
+            context_size = level - 1
+            for i in range(len(tokens) - context_size):
+                context = tuple(tokens[i : i + context_size])
+                next_word = tokens[i + context_size]
+                self.model[context][next_word] += 1
 
-    def get_ranked_predictions(self, context: Tuple[str, str]) -> List[str]:
+    def get_ranked_predictions(self, context: Tuple[str, ...]) -> List[str]:
         """
-        Given a 2-word context, return words ranked
-        from most likely to least likely.
+        Finds predictions for the specific context provided.
         """
         if context not in self.model:
             return []
 
         counter = self.model[context]
-        # Return just the words, sorted by frequency
         return [word for word, _ in counter.most_common()]
