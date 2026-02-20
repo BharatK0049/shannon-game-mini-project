@@ -107,7 +107,7 @@ class ShannonGame:
 
     def estimate_redundancy(self, entropy: float):
         """
-        Calculates language redundancy based on the estimated entropy.
+        Calculates redundancy using vocabulary size for word-level modeling.
 
         Redundancy measures how much of the language is determined by its 
         structure rather than choice.
@@ -122,8 +122,11 @@ class ShannonGame:
         Returns:
             float: The redundancy value R = 1 - (H / H_max).
         """
-        # H_max for character models: log2(27)
-        max_entropy = math.log2(27) 
+        vocab_size = len(self.model.vocab)
+        if vocab_size <= 1:
+            return 0.0  # Avoid division by zero; no redundancy if vocab is too small
+
+        max_entropy = math.log2(vocab_size) 
         redundancy = 1 - (entropy / max_entropy)
 
         return redundancy

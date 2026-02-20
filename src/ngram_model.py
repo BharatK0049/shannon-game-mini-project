@@ -23,6 +23,7 @@ class NGramModel:
         # A dictionary mapping a context (tuple of words) to a Counter of next words.
         # Counter stores how many times each word followed that specific context.
         self.model: Dict[Tuple[str, ...], Counter] = defaultdict(Counter)
+        self.vocab = set()
 
     def train(self, tokens: List[str]):
         """
@@ -35,6 +36,7 @@ class NGramModel:
         Args:
             tokens (List[str]): A list of word tokens from the training corpus.
         """
+        self.vocab.update(tokens)
         # Iterate through each level from 2 (Bigram) up to the specified cap (N-gram)
         for level in range(2, self.n + 1):
             # Context size is always one less than the N-gram level

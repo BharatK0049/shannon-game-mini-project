@@ -97,6 +97,9 @@ def main():
     
     # Perplexity (PP = 2^H) justifies model quality by showing average uncertainty
     entropy = game.estimate_entropy()
+    redundancy = game.estimate_redundancy(entropy)
+    print(f"Estimated Entropy: {entropy:.4f} bits/word")
+    print(f"Estimated Redundancy: {redundancy:.2%}")
     perplexity = 2 ** entropy
     print(f"Estimated Perplexity: {perplexity:.2f}")
 
